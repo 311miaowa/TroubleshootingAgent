@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bugstack.ai.infrastructure.dao.IAiDataSourceEntityDao">
+
+    <resultMap id="AiDataSourceEntityMap" type="cn.bugstack.ai.infrastructure.dao.po.AiDataSourceEntity">
+        <id column="id" property="id"/>
+        <result column="ds_id" property="dsId"/>
+        <result column="entity_code" property="entityCode"/>
+        <result column="entity_name" property="entityName"/>
+        <result column="entity_desc" property="entityDesc"/>
+        <result column="physical_name" property="physicalName"/>
+        <result column="capability" property="capability"/>
+        <result column="query_template" property="queryTemplate"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, ds_id, entity_code, entity_name, entity_desc, physical_name, capability, query_template, status, create_time, update_time
+    </sql>
+
+    <insert id="insert" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSourceEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_data_source_entity (
+            ds_id, entity_code, entity_name, entity_desc, physical_name, capability, query_template, status, create_time, update_time
+        ) VALUES (
+            #{dsId}, #{entityCode}, #{entityName}, #{entityDesc}, #{physicalName}, #{capability}, #{queryTemplate}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSourceEntity">
+        UPDATE ai_data_source_entity SET
+            ds_id = #{dsId},
+            entity_code = #{entityCode},
+            entity_name = #{entityName},
+            entity_desc = #{entityDesc},
+            physical_name = #{physicalName},
+            capability = #{capability},
+            query_template = #{queryTemplate},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateByDsIdAndEntityCode" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSourceEntity">
+        UPDATE ai_data_source_entity SET
+            entity_name = #{entityName},
+            entity_desc = #{entityDesc},
+            physical_name = #{physicalName},
+            capability = #{capability},
+            query_template = #{queryTemplate},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE ds_id = #{dsId}
+          AND entity_code = #{entityCode}
+    </update>
+
+    <delete id="deleteByDsId" parameterType="java.lang.String">
+        DELETE FROM ai_data_source_entity WHERE ds_id = #{dsId}
+    </delete>
+
+    <select id="queryByDsIdAndEntityCode" resultMap="AiDataSourceEntityMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source_entity
+        WHERE ds_id = #{dsId}
+          AND entity_code = #{entityCode}
+    </select>
+
+    <select id="queryEnabledByDsId" resultMap="AiDataSourceEntityMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source_entity
+        WHERE status = 1
+          AND ds_id = #{dsId}
+        ORDER BY id
+    </select>
+
+    <select id="queryEnabledByDsIdAndCapability" resultMap="AiDataSourceEntityMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source_entity
+        WHERE status = 1
+          AND ds_id = #{dsId}
+          AND capability = #{capability}
+        ORDER BY id
+    </select>
+
+    <select id="queryEnabled" resultMap="AiDataSourceEntityMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source_entity
+        WHERE status = 1
+        ORDER BY ds_id, id
+    </select>
+
+</mapper>

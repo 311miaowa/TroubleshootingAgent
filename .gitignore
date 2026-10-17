@@ -1,0 +1,72 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+/.idea/
+/ai-agent-station-study-app/data/
+/data/
+.local-config
+.env
+.env.*
+!.env.example
+
+# --- 凭据类文件一律不入库（开源前隐私加固，见 SECURITY.md / docs/dev-ops/OPENSOURCE-CHECKLIST.md）---
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.ppk
+id_rsa*
+id_ed25519*
+*_secret*.yml
+*_secret*.yaml
+*-secret.yml
+*-secret.yaml
+application-local*.yml
+application-local*.yaml
+secrets/
+*.sql.gz
+
+hs_err_pid*.log
+replay_pid*.log
+
+# 沙箱验证用 npm 缓存（M1.1 ES MCP 在受限沙箱下 npm 缓存不可写，重定向到 workspace）
+.npm-cache-m1/
+# M3.3 前端 npm 缓存（同 M1.1 理由，重定向到 workspace）
+.npm-cache-m3/
+

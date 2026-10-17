@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bugstack.ai.infrastructure.dao.IAiDataSourceDao">
+
+    <resultMap id="AiDataSourceMap" type="cn.bugstack.ai.infrastructure.dao.po.AiDataSource">
+        <id column="id" property="id"/>
+        <result column="ds_id" property="dsId"/>
+        <result column="ds_name" property="dsName"/>
+        <result column="ds_type" property="dsType"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="mcp_id" property="mcpId"/>
+        <result column="conn_config" property="connConfig"/>
+        <result column="time_field" property="timeField"/>
+        <result column="max_rows" property="maxRows"/>
+        <result column="timeout_ms" property="timeoutMs"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, ds_id, ds_name, ds_type, tenant_id, mcp_id, conn_config, time_field, max_rows, timeout_ms, status, create_time, update_time
+    </sql>
+
+    <insert id="insert" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSource" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_data_source (
+            ds_id, ds_name, ds_type, tenant_id, mcp_id, conn_config, time_field, max_rows, timeout_ms, status, create_time, update_time
+        ) VALUES (
+            #{dsId}, #{dsName}, #{dsType}, #{tenantId}, #{mcpId}, #{connConfig}, #{timeField}, #{maxRows}, #{timeoutMs}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSource">
+        UPDATE ai_data_source SET
+            ds_id = #{dsId},
+            ds_name = #{dsName},
+            ds_type = #{dsType},
+            tenant_id = #{tenantId},
+            mcp_id = #{mcpId},
+            conn_config = #{connConfig},
+            time_field = #{timeField},
+            max_rows = #{maxRows},
+            timeout_ms = #{timeoutMs},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateByDsId" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiDataSource">
+        UPDATE ai_data_source SET
+            ds_name = #{dsName},
+            ds_type = #{dsType},
+            tenant_id = #{tenantId},
+            mcp_id = #{mcpId},
+            conn_config = #{connConfig},
+            time_field = #{timeField},
+            max_rows = #{maxRows},
+            timeout_ms = #{timeoutMs},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE ds_id = #{dsId}
+    </update>
+
+    <delete id="deleteByDsId" parameterType="java.lang.String">
+        DELETE FROM ai_data_source WHERE ds_id = #{dsId}
+    </delete>
+
+    <select id="queryByDsId" parameterType="java.lang.String" resultMap="AiDataSourceMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source
+        WHERE ds_id = #{dsId}
+    </select>
+
+    <select id="queryEnabled" resultMap="AiDataSourceMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source
+        WHERE status = 1
+        ORDER BY id
+    </select>
+
+    <select id="queryEnabledByTenant" resultMap="AiDataSourceMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_data_source
+        WHERE status = 1
+          AND tenant_id = #{tenantId}
+        ORDER BY id
+    </select>
+
+</mapper>

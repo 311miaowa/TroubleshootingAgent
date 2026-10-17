@@ -1,0 +1,79 @@
+version: '3.9'
+# 执行脚本；docker-compose -f docker-compose-elk.yml up -d
+# mkdir -p {config,data,logs,plugins}
+# 控制台；GET _cat/indices - 查看 springboot-logstash- 是否存在，上报后存在，则表示接入成功
+services:
+  elasticsearch:
+    image: elasticsearch:7.17.28
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - 'cluster.name=elasticsearch' # 设置集群名称为elasticsearch
+      - 'discovery.type=single-node' # 以单一节点模式启动
+      - "cluster.name=docker-cluster" # 设置名称
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m' # 设置使用jvm内存大小
+      # ---- P1-3 / D-5：服务端安全特性（basic auth，**不启 TLS**）----
+      # 口令从宿主机环境变量注入：export ELASTIC_PASSWORD=...  再 up -d
+      # 缺变量时 compose 直接报错退出（:? 语法），避免起出一个"无口令"的集群
+      - 'xpack.security.enabled=true'
+      - 'xpack.security.http.ssl.enabled=false' # 本机演示：不开 TLS（生产必须开）
+      - 'xpack.security.authc.api_key.enabled=true' # 允许只读 API Key（7.17 默认关闭）
+      - 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD:?ELASTIC_PASSWORD is required}'
+    networks:
+      - my-network
+
+  logstash:
+    image: logstash:7.17.28
+    container_name: logstash
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - '4560:4560'
+      - '50000:50000/tcp'
+      - '50000:50000/udp'
+      - '9600:9600'
+    environment:
+      LS_JAVA_OPTS: -Xms1024m -Xmx1024m
+      TZ: Asia/Shanghai
+      MONITORING_ENABLED: false
+      # P1-3：Logstash 向 ES 写入的账号（超管；只读 key 无权写）
+      ES_USER: ${ES_USER:-elastic}
+      ES_PASSWORD: ${ELASTIC_PASSWORD:?ELASTIC_PASSWORD is required}
+    links:
+      - elasticsearch:es # 可以用es这个域名访问elasticsearch服务
+    networks:
+      - my-network
+    depends_on:
+      - elasticsearch # 依赖elasticsearch启动后在启动logstash
+
+  kibana:
+    image: kibana:7.17.28
+    container_name: kibana
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - '5601:5601'
+    links:
+      - elasticsearch:es #可以用es这个域名访问elasticsearch服务
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200 #设置访问elasticsearch的地址
+      - 'elasticsearch.hosts=http://es:9200' #设置访问elasticsearch的地址
+      - I18N_LOCALE=zh-CN
+      # P1-3：Kibana 连 ES 需要凭据
+      - ELASTICSEARCH_USERNAME=${ES_USER:-elastic}
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:?ELASTIC_PASSWORD is required}
+    networks:
+      - my-network
+    depends_on:
+      - elasticsearch
+
+networks:
+  my-network:
+    driver: bridge

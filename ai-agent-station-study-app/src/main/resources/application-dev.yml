@@ -1,0 +1,89 @@
+server:
+  port: 8099
+
+# 线程池配置
+thread:
+  pool:
+    executor:
+      config:
+        core-pool-size: 20
+        max-pool-size: 50
+        keep-alive-time: 5000
+        block-queue-size: 5000
+        policy: CallerRunsPolicy
+
+# 数据库配置；启动时配置数据库资源信息
+spring:
+  datasource:
+    mysql:
+      username: ${MYSQL_USERNAME:root}
+      # 本机/生产都必须显式注入，不在仓库里放任何默认口令
+      password: ${MYSQL_PASSWORD:}
+      url: jdbc:mysql://localhost:3306/ai-agent-station-study?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.zaxxer.hikari.HikariDataSource
+      hikari:
+        pool-name: Retail_HikariCP
+        minimum-idle: 15 #最小空闲连接数量
+        idle-timeout: 180000 #空闲连接存活最大时间，默认600000（10分钟）
+        maximum-pool-size: 25 #连接池最大连接数，默认是10
+        auto-commit: true  #此属性控制从池返回的连接的默认自动提交行为,默认值：true
+        max-lifetime: 1800000 #此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+        connection-timeout: 30000 #数据库连接超时时间,默认30秒，即30000
+        connection-test-query: SELECT 1
+    pgvector:
+      driver-class-name: org.postgresql.Driver
+      username: ${PGVECTOR_USERNAME:postgres}
+      password: ${PGVECTOR_PASSWORD:}
+      url: jdbc:postgresql://localhost:15432/ai-rag-knowledge
+      type: com.zaxxer.hikari.HikariDataSource
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 2
+        idle-timeout: 30000
+        connection-timeout: 30000
+  ai:
+    # 这里无需配置任何 LLM 的 api-key：
+    #   - 对话模型走数据库：AiClientApiNode 从 ai_client_api 读取 base_url / api_key / completions_path
+    #     （切换服务商见 docs/dev-ops/mysql/sql/switch-to-deepseek.sql）；
+    #   - 向量化走下方 xfg.embedding.*；
+    #   - 相关的 Spring AI 自动配置已在 Application 中排除，故启动不依赖 spring.ai.openai.api-key。
+    agent:
+      auto-config:
+        # 启动预热装配的客户端：当前项目=故障根因定位 Agent（agent_id=4）的四步链
+        # 二开清理：原为课程通用 Auto 链 3101-3104（已从建库基线删除）
+        enabled: true
+        client-ids: 4101,4102,4103,4104
+
+# RAG 向量化配置（项目自定义）
+# DeepSeek 不提供 embeddings 接口，因此默认关闭：
+#   - enabled=false 时不创建向量库，若库中配置了 RagAnswer 顾问会被跳过并打印明确原因；
+#   - 需要 RAG 时置为 true，并把 base-url / api-key 指向任意 OpenAI 兼容的向量化服务。
+# 另：向量维度需与 pgvector 表结构一致（vector_store_openai 当前为 1536 维），
+#     换用其它维度的模型时必须同时迁移表结构，可在此显式指定 dimensions。
+xfg:
+  # 接口暴露面（GAP §3 P2「健康端点暴露面」收口）
+  web:
+    # 设置后 /api/** 全部要求 X-API-Key（或 Authorization: Bearer）；留空 = 本地开发放行（启动时打 WARN）
+    # 生产必须设置：export XFG_API_KEY=<强随机串>
+    api-key: ${XFG_API_KEY:}
+    # CORS 允许来源（逗号分隔）。不再允许 "*"：按需追加你自己的前端地址
+    cors-allowed-origins: ${XFG_CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  datasource:
+    # 阶段策略 fail-closed 开关（GAP §3 P0-2 · D-3 拍板：先告警一个版本再拒 → 本版本已翻默认）
+    #   true（本版本默认）= 未知阶段 / 策略查询异常 一律"拒绝"（该阶段 0 个语义工具，只剩纯文本推理）
+    #   false            = 临时回退：只告警、放行（不裁剪），日志里有 WARN + 补救 SQL
+    policy:
+      fail-closed: ${XFG_DATASOURCE_POLICY_FAIL_CLOSED:true}
+  embedding:
+    enabled: ${EMBEDDING_ENABLED:false}
+    base-url: ${EMBEDDING_BASE_URL:}
+    api-key: ${EMBEDDING_API_KEY:}
+    vector-table: vector_store_openai
+    dimensions: 0
+
+# 日志
+logging:
+  level:
+    root: info
+  config: classpath:logback-spring.xml

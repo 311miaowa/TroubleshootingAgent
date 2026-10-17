@@ -1,0 +1,46 @@
+spring:
+  config:
+    name: ai-agent-station-study-app
+  profiles:
+    active: dev
+  ai:
+    # ------------------------------------------------------------------------
+    # 关闭 Spring AI 内置的 OpenAI 模型自动配置。
+    #
+    # 为什么必须关：这些自动配置都会强制要求 spring.ai.openai.api-key 非空，而本项目
+    #   - 对话模型走数据库：AiClientApiNode 从 ai_client_api 读取 base_url/api_key 构建 OpenAiApi；
+    #   - 向量化走 xfg.embedding.*：见 AiAgentConfig；
+    # 两者都不使用它们产生的 Bean。若不关闭，启动会被强制要求一个本项目并不需要的 key，
+    # 而 DeepSeek 又不提供 embeddings 接口，等于凭空多出一个无解的启动依赖。
+    #
+    # 依据（Spring AI 1.0.0 的字节码条件，已用 javap -v 核实）：
+    #   @ConditionalOnProperty(name = "spring.ai.model.chat|embedding|image|moderation|audio.speech|audio.transcription",
+    #                          havingValue = "openai", matchIfMissing = true)
+    #   @ConditionalOnProperty(name = "spring.ai.vectorstore.type", havingValue = "pgvector", matchIfMissing = true)
+    #   @ConditionalOnProperty(prefix = "spring.ai.chat.client", name = "enabled",
+    #                          havingValue = "true", matchIfMissing = true)
+    #
+    # 若将来要改用 Spring AI 内置的 ChatModel / EmbeddingModel，
+    # 把对应项设回 openai / pgvector，并配置 spring.ai.openai.* 即可。
+    # ------------------------------------------------------------------------
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    vectorstore:
+      type: none
+    chat:
+      client:
+        enabled: false
+
+# 项目自定义配置
+xfg:
+  datasource:
+    health:
+      # M4：数据源健康结果缓存 TTL（毫秒）。启动期检查一次 + 端点默认走缓存，
+      # 需要实时状态时用 GET /api/v1/datasource/health?refresh=true 强制重查。
+      ttl-ms: 30000

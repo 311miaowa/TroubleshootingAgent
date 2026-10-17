@@ -1,0 +1,42 @@
+server:
+  port: 8091
+
+# 线程池配置
+thread:
+  pool:
+    executor:
+      config:
+        core-pool-size: 20
+        max-pool-size: 50
+        keep-alive-time: 5000
+        block-queue-size: 5000
+        policy: CallerRunsPolicy
+
+# 简化配置，禁用数据库自动配置
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
+  ai:
+    # 无需配置 LLM api-key，说明见 application-dev.yml
+    agent:
+      auto-config:
+        enabled: false
+
+# RAG 向量化配置（项目自定义），默认关闭，详见 application-dev.yml 中的说明
+xfg:
+  embedding:
+    enabled: ${EMBEDDING_ENABLED:false}
+    base-url: ${EMBEDDING_BASE_URL:}
+    api-key: ${EMBEDDING_API_KEY:}
+    vector-table: vector_store_openai
+    dimensions: 0
+
+# 日志
+logging:
+  level:
+    root: info
+    cn.bugstack.ai: debug
+  config: classpath:logback-spring.xml

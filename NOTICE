@@ -1,0 +1,38 @@
+Troubleshooting-Agent
+Copyright 2026 311miaowa and contributors
+
+This product is a derivative work (secondary development) of the following project:
+
+  ai-agent-station
+  License: Apache License 2.0
+  (Upstream author names and site details are not repeated in this file;
+   the upstream project's own LICENSE / notice carries them.)
+
+Upstream material retained in this repository includes the original project's
+module skeleton (Maven multi-module layout, MyBatis configuration styles) and,
+where noted in file headers, original author attributions.
+
+Secondary development contributed by 311miaowa, licensed under the Apache
+License 2.0 as well; it includes, among other things:
+
+  * the unified data source access layer (IDataSourceProvider SPI, capability
+    enum, in-memory registry, unified query facade) for Elasticsearch, MySQL and
+    PostgreSQL;
+  * the semantic tool layer with per-stage capability policy
+    (ai_stage_tool_policy, deny-by-default) replacing direct database tool
+    exposure;
+  * the four-step execution chain (analyze / execute / supervise / summarize)
+    with quality-supervision feedback;
+  * two-level evidence back-references (result-level rawRef and row-level
+    _rawRef) with a strict event/model dual-channel that keeps technical
+    pointers out of model prompts;
+  * the read-only query guards (SQL template rendering with full parameter
+    binding; Elasticsearch index/DSL whitelist guard).
+
+NOTE ON REPOSITORY HISTORY
+
+  This repository is published as a single, history-free snapshot. The upstream
+  course history (which is not part of this project's work) contained demo
+  credentials belonging to its author; those credentials are neither used by nor
+  required for this project. See docs/dev-ops/OPENSOURCE-CHECKLIST.md for the
+  full account and for the release checklist.

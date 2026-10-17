@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bugstack.ai.infrastructure.dao.IAiStageToolPolicyDao">
+
+    <resultMap id="AiStageToolPolicyMap" type="cn.bugstack.ai.infrastructure.dao.po.AiStageToolPolicy">
+        <id column="id" property="id"/>
+        <result column="stage_code" property="stageCode"/>
+        <result column="capability" property="capability"/>
+        <result column="allowed" property="allowed"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stage_code, capability, allowed, create_time, update_time
+    </sql>
+
+    <insert id="insert" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiStageToolPolicy" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_stage_tool_policy (
+            stage_code, capability, allowed, create_time, update_time
+        ) VALUES (
+            #{stageCode}, #{capability}, #{allowed}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiStageToolPolicy">
+        UPDATE ai_stage_tool_policy SET
+            stage_code = #{stageCode},
+            capability = #{capability},
+            allowed = #{allowed},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateByStageCodeAndCapability" parameterType="cn.bugstack.ai.infrastructure.dao.po.AiStageToolPolicy">
+        UPDATE ai_stage_tool_policy SET
+            allowed = #{allowed},
+            update_time = #{updateTime}
+        WHERE stage_code = #{stageCode}
+          AND capability = #{capability}
+    </update>
+
+    <delete id="deleteByStageCode" parameterType="java.lang.String">
+        DELETE FROM ai_stage_tool_policy WHERE stage_code = #{stageCode}
+    </delete>
+
+    <select id="queryAll" resultMap="AiStageToolPolicyMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_stage_tool_policy
+        ORDER BY stage_code, capability
+    </select>
+
+    <select id="queryByStageCode" resultMap="AiStageToolPolicyMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_stage_tool_policy
+        WHERE stage_code = #{stageCode}
+        ORDER BY capability
+    </select>
+
+    <select id="queryAllowedCapabilities" resultType="java.lang.String">
+        SELECT capability
+        FROM ai_stage_tool_policy
+        WHERE stage_code = #{stageCode}
+          AND allowed = 1
+        ORDER BY capability
+    </select>
+
+</mapper>

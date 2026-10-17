@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+npm-debug.log*
+.DS_Store
+
+# 冒烟/验证脚本的临时产物
+scripts/.smoke.mjs
+scripts/.verify.mjs
+scripts/.sse-real.txt
+scripts/.req.json
+scripts/render-check.cjs
